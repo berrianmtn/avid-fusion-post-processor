@@ -244,7 +244,7 @@ var jetMode = false;
 // Berrian Mountain Projects (BMP)
 var bmpLaserMilling = false; // default: false, whether the current section is a milling tool path using a laser tool
 var bmpLaserState = 0; // if non-zero, the laser is on (e.g. currently in a cutting move)
-var bmpVersion = "0.0.1"; // The version of this customized post processor.
+var bmpVersion = "0.0.2"; // The version of this customized post processor.
 
 function onOpen() {
   // define and enable machine configuration
@@ -362,14 +362,14 @@ function onMovement(movement) {
   switch (movement) {
     case MOVEMENT_CUTTING:
     case 14: /* finishing cut */
-      if (bmpLaserState == 0) {
+      if (tool.number == getProperty("laserToolNumber") && bmpLaserState == 0) {
          writeBlock(sOutput.format(currentSection.getTool().spindleRPM));          
         bmpLaserState = 1;
         gMotionModal.reset();
       }
         break;
     default:
-      if (bmpLaserState == 1) {
+      if (tool.number == getProperty("laserToolNumber") && bmpLaserState == 1) {
         bmpLaserState = 0;
         writeBlock(sOutput.format(0));        
         gMotionModal.reset();
@@ -1491,6 +1491,8 @@ function writeProgramHeader() {
       writeComment("  " + localize("description") + ": "  + mDescription);
     }
   }
+
+  writeComment(" " + "bmpVersion: " + bmpVersion);
 
   // dump tool information
   if (getProperty("writeTools")) {
